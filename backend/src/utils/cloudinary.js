@@ -7,14 +7,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-cloudinary.v2.uploader
-  .upload(
-    "my_image.jpg",
-    { public_id: "sample_image" },
-    function (error, result) {
-      if (error) {
-        console.error("Error uploading to Cloudinary:", error);
-      }
-    }
-  )
-  .then((result) => console.log(result));
+const uploadToCloudinary = async (filePath, options = {}) => {
+  try {
+    const response = await cloudinary.uploader.upload(filePath, {
+      resource_type: "auto",
+      ...options,
+    });
+    // file has been uploaded successfull
+    console.log("file is uploaded on cloudinary ", response.url);
+    fs.unlinkSync(filePath);
+    return response;
+  } catch (error) {
+    fs.unlinkSync(filePath);
+    console.error("Error uploading to Cloudinary:", error);
+    throw error;
+  }
+};
+
+export { uploadToCloudinary };
